@@ -77,6 +77,8 @@ curl -X POST http://localhost:8080/api/tasks \
 
 If an agent errors, orchestrator retries that role up to `max_retries`, then marks task `failed`.
 
+Orchestrator queue selection is environment-driven (`TASK_QUEUE`, `AGENT_CHAT_QUEUE`, `RESULT_QUEUE`) with defaults matching the existing queue names.
+
 Check status:
 
 ```bash
