@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Agent;
+
 final class AgentController
 {
     public function store(array $request): array
@@ -20,17 +22,7 @@ final class AgentController
             }
         }
 
-        $record = [
-            'id' => store('agents')->nextId(),
-            'name' => trim((string) $body['name']),
-            'role' => trim((string) $body['role']),
-            'llm_model' => trim((string) $body['llm_model']),
-            'system_prompt' => trim((string) $body['system_prompt']),
-            'temperature' => (float) ($body['temperature'] ?? 0.2),
-            'created_at' => date(DATE_ATOM),
-        ];
-
-        store('agents')->append($record);
+        $record = Agent::create($body);
 
         return [
             'status' => 201,

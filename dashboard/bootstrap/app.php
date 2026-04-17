@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../app/Models/Agent.php';
+require_once __DIR__ . '/../app/Models/Team.php';
+require_once __DIR__ . '/../app/Models/Task.php';
 require_once __DIR__ . '/../app/Services/SqsPublisher.php';
 require_once __DIR__ . '/../app/Services/ResultIngestor.php';
 require_once __DIR__ . '/../app/Http/Controllers/AgentController.php';
@@ -36,7 +39,9 @@ return static function (string $method, string $path, array $body = []) use ($ro
             }
         }
 
-        $response = $handler($request, $params);
+        $response = $params === []
+            ? $handler($request)
+            : $handler($request, $params);
         if (is_array($response) && isset($response['status'], $response['body'])) {
             return $response;
         }

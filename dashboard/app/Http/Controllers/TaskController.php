@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
+use App\Models\Team;
 use App\Services\ResultIngestor;
 use App\Services\SqsPublisher;
 
@@ -29,7 +31,7 @@ final class TaskController
             ];
         }
 
-        $team = store('teams')->firstWhere(static fn (array $row): bool => (int) $row['id'] === $teamId);
+        $team = Team::find($teamId);
         if ($team === null) {
             return [
                 'status' => 404,
@@ -42,18 +44,14 @@ final class TaskController
         $firstRole = (string) $agentOrder[0];
         $maxRetries = max(0, (int) ($body['max_retries'] ?? 1));
 
-        $task = [
+        Task::create([
             'id' => $taskId,
             'team_id' => $teamId,
             'input' => $input,
             'status' => 'queued',
             'conversation' => [],
             'result' => null,
-            'created_at' => date(DATE_ATOM),
-            'updated_at' => date(DATE_ATOM),
-        ];
-
-        store('tasks')->append($task);
+        ]);
 
         $this->publisher->send('task-queue', [
             'task_id' => $taskId,
@@ -80,7 +78,7 @@ final class TaskController
         $taskId = (string) ($params['id'] ?? '');
         $this->resultIngestor->pollTask($taskId);
 
-        $task = store('tasks')->firstWhere(static fn (array $row): bool => (string) $row['id'] === $taskId);
+        $task = Task::find($taskId);
         if ($task === null) {
             return [
                 'status' => 404,
@@ -103,7 +101,7 @@ final class TaskController
         $taskId = (string) ($params['id'] ?? '');
         $this->resultIngestor->pollTask($taskId);
 
-        $task = store('tasks')->firstWhere(static fn (array $row): bool => (string) $row['id'] === $taskId);
+        $task = Task::find($taskId);
         if ($task === null) {
             return [
                 'status' => 404,

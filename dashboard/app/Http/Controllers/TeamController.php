@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Team;
+
 final class TeamController
 {
     public function store(array $request): array
@@ -25,14 +27,10 @@ final class TeamController
             ];
         }
 
-        $record = [
-            'id' => store('teams')->nextId(),
-            'name' => trim((string) $body['name']),
-            'agent_order' => array_values(array_map(static fn ($v): string => (string) $v, $agentOrder)),
-            'created_at' => date(DATE_ATOM),
-        ];
-
-        store('teams')->append($record);
+        $record = Team::create([
+            'name' => $body['name'],
+            'agent_order' => $agentOrder,
+        ]);
 
         return [
             'status' => 201,
