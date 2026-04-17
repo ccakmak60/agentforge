@@ -8,6 +8,8 @@ metadata:
 spec:
   scaleTargetRef:
     name: agent-researcher
+  pollingInterval: 30
+  cooldownPeriod: 300
   minReplicaCount: 1
   maxReplicaCount: 5
   triggers:
@@ -16,6 +18,7 @@ spec:
         queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
         queueLength: "5"
         awsRegion: us-east-1
+        identityOwner: operator
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -27,6 +30,8 @@ metadata:
 spec:
   scaleTargetRef:
     name: agent-summarizer
+  pollingInterval: 30
+  cooldownPeriod: 300
   minReplicaCount: 1
   maxReplicaCount: 5
   triggers:
@@ -35,6 +40,7 @@ spec:
         queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
         queueLength: "5"
         awsRegion: us-east-1
+        identityOwner: operator
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -46,6 +52,8 @@ metadata:
 spec:
   scaleTargetRef:
     name: agent-reviewer
+  pollingInterval: 30
+  cooldownPeriod: 300
   minReplicaCount: 1
   maxReplicaCount: 5
   triggers:
@@ -54,3 +62,4 @@ spec:
         queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
         queueLength: "5"
         awsRegion: us-east-1
+        identityOwner: operator
