@@ -53,6 +53,10 @@ services:
     environment:
       AGENT_TYPE: researcher
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      AWS_REGION: us-east-1
+      TASK_QUEUE: task-queue
+      AGENT_CHAT_QUEUE: agent-chat
+      RESULT_QUEUE: result-queue
     depends_on:
       - elasticmq
 
@@ -61,6 +65,10 @@ services:
     environment:
       AGENT_TYPE: summarizer
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      AWS_REGION: us-east-1
+      TASK_QUEUE: task-queue
+      AGENT_CHAT_QUEUE: agent-chat
+      RESULT_QUEUE: result-queue
     depends_on:
       - elasticmq
 
@@ -69,6 +77,10 @@ services:
     environment:
       AGENT_TYPE: reviewer
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      AWS_REGION: us-east-1
+      TASK_QUEUE: task-queue
+      AGENT_CHAT_QUEUE: agent-chat
+      RESULT_QUEUE: result-queue
     depends_on:
       - elasticmq
 
@@ -76,6 +88,10 @@ services:
     build: ./orchestrator
     environment:
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      AWS_REGION: us-east-1
+      TASK_QUEUE: task-queue
+      AGENT_CHAT_QUEUE: agent-chat
+      RESULT_QUEUE: result-queue
       TEAM_ORDER: researcher,summarizer,reviewer
     depends_on:
       - elasticmq

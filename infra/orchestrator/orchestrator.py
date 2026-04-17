@@ -8,6 +8,9 @@ import boto3
 SQS_ENDPOINT_URL = os.getenv("SQS_ENDPOINT_URL", "http://elasticmq:9324")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 TEAM_ORDER = os.getenv("TEAM_ORDER", "researcher,summarizer,reviewer").split(",")
+TASK_QUEUE = os.getenv("TASK_QUEUE", "task-queue")
+AGENT_CHAT_QUEUE = os.getenv("AGENT_CHAT_QUEUE", "agent-chat")
+RESULT_QUEUE = os.getenv("RESULT_QUEUE", "result-queue")
 
 sqs = boto3.client(
     "sqs",
@@ -58,9 +61,9 @@ def compute_routing_decision(payload: dict, default_team_order: list[str]) -> di
 
 
 def main() -> None:
-    task_queue_url = queue_url("task-queue")
-    chat_queue_url = queue_url("agent-chat")
-    result_queue_url = queue_url("result-queue")
+    task_queue_url = queue_url(TASK_QUEUE)
+    chat_queue_url = queue_url(AGENT_CHAT_QUEUE)
+    result_queue_url = queue_url(RESULT_QUEUE)
 
     print("orchestrator started")
     while True:

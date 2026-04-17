@@ -13,7 +13,8 @@ and are intended for quick `kubectl apply` on a local cluster (minikube / kind).
   All wire the ConfigMap keys as env vars and reference `OPENAI_API_KEY` from
   the Secret as an optional key.
 - `hpa/agents-hpa.yaml` – KEDA `ScaledObject` resources that scale each
-  Deployment based on the task SQS queue depth.
+  Deployment based on the task SQS queue depth, including polling/cooldown
+  controls and `identityOwner` metadata.
 
 ## Apply order
 
@@ -29,6 +30,8 @@ kubectl apply -f k8s/hpa/agents-hpa.yaml
 - The raw manifests and the Helm chart share the same env contract, so you can
   switch between them without changing the container image.
 - For production, prefer the Helm chart which parameterizes replicas, resources,
-  KEDA triggers, and the OpenAI secret.
+  KEDA triggers (including `authenticationRef`), and the OpenAI secret.
 - Update the KEDA `queueURL` in `hpa/agents-hpa.yaml` to point at your real SQS
   queue ARN/URL, or disable KEDA if you are running locally against ElasticMQ.
+- For raw manifests, tune `pollingInterval` / `cooldownPeriod` in
+  `hpa/agents-hpa.yaml` per environment scale behavior.

@@ -1,4 +1,5 @@
 {{- if .Values.keda.enabled }}
+{{- $queueUrl := required "keda.queueUrl must be set when keda.enabled=true" .Values.keda.queueUrl }}
 {{- range .Values.agents }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -10,14 +11,21 @@ metadata:
 spec:
   scaleTargetRef:
     name: {{ include "agentforge.fullname" $ }}-{{ .name }}
+  pollingInterval: {{ $.Values.keda.pollingInterval }}
+  cooldownPeriod: {{ $.Values.keda.cooldownPeriod }}
   minReplicaCount: {{ $.Values.keda.minReplicaCount }}
   maxReplicaCount: {{ $.Values.keda.maxReplicaCount }}
   triggers:
     - type: aws-sqs-queue
       metadata:
-        queueURL: {{ $.Values.keda.queueUrl | quote }}
+        queueURL: {{ $queueUrl | quote }}
         queueLength: {{ $.Values.keda.queueLength | quote }}
         awsRegion: {{ $.Values.awsRegion | quote }}
+        identityOwner: {{ $.Values.keda.identityOwner | quote }}
+{{- if and $.Values.keda.authenticationRef.enabled $.Values.keda.authenticationRef.name }}
+      authenticationRef:
+        name: {{ $.Values.keda.authenticationRef.name | quote }}
+{{- end }}
 ---
 {{- end }}
 {{- end }}
