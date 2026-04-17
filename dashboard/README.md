@@ -1,6 +1,6 @@
-# Dashboard API (Implementation Scaffold)
+# Dashboard API (Migration in Progress)
 
-This folder now contains a working PHP API scaffold for the dashboard endpoints from the design document.
+This folder contains the dashboard API implementation while migrating from the original single-file PHP scaffold toward a Laravel-style structure.
 
 ## Implemented Endpoints
 
@@ -11,14 +11,12 @@ This folder now contains a working PHP API scaffold for the dashboard endpoints 
 - `GET /api/tasks/{id}/conversation`
 - `POST /api/webhooks/n8n`
 
-## How it Works
+## Current Architecture
 
-- Data persistence supports two backends:
-  - `json` (file-based in `dashboard/storage/*.json`)
-  - `dynamodb` (DynamoDB API, typically `dynamodb-local` in compose)
-- Task submission pushes to SQS-compatible `task-queue` (ElasticMQ in local dev).
-- Status polling checks `result-queue` and updates task records.
-- Webhook endpoint accepts final payloads from n8n.
+- `public/index.php` is now a thin entrypoint.
+- `bootstrap/app.php` dispatches method + path to route handlers.
+- `routes/api.php` maps endpoint contracts to controller classes under `app/Http/Controllers`.
+- Existing store and SQS integrations in `src/` are reused during migration to preserve behavior.
 
 ### Storage backend env vars
 
@@ -40,4 +38,4 @@ API base URL:
 
 ## Planned Upgrade
 
-Replace this scaffold with a full Laravel 11 + Livewire dashboard while keeping the same endpoint contract.
+Complete migration to a full Laravel 11 application + Livewire dashboard while keeping this API contract stable.
