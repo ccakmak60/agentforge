@@ -53,3 +53,17 @@ Example install command:
 ```bash
 helm upgrade --install agentforge ./k8s/charts/agentforge -f ./k8s/charts/agentforge/values-prod.yaml
 ```
+
+## Development example values
+
+A local/dev profile is provided in `values-dev.yaml` with:
+
+- `llm.provider: stub`
+- `keda.enabled: false` for simpler local behavior
+- single-replica agents and minimal defaults
+
+Example install command:
+
+```bash
+helm upgrade --install agentforge ./k8s/charts/agentforge -f ./k8s/charts/agentforge/values-dev.yaml
+```
