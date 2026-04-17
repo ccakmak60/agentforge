@@ -1,0 +1,65 @@
+image:
+  repository: agentforge/agents
+  tag: stable
+  pullPolicy: IfNotPresent
+
+sqsEndpointUrl: https://sqs.us-east-1.amazonaws.com
+awsRegion: us-east-1
+
+queues:
+  task: task-queue
+  chat: agent-chat
+  result: result-queue
+
+llm:
+  provider: openai
+  openaiModel: gpt-4o-mini
+  ollamaModel: llama3.1
+  ollamaBaseUrl: http://ollama.default.svc.cluster.local:11434
+
+secrets:
+  create: false
+  name: agentforge-secrets
+  openaiApiKey: ""
+
+keda:
+  enabled: true
+  pollingInterval: 20
+  cooldownPeriod: 180
+  minReplicaCount: 2
+  maxReplicaCount: 10
+  queueLength: "10"
+  queueUrl: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+  identityOwner: operator
+  authenticationRef:
+    enabled: true
+    name: agentforge-keda-auth
+
+agents:
+  - name: researcher
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: summarizer
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  - name: reviewer
+    replicas: 2
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi

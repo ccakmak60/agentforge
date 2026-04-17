@@ -38,3 +38,18 @@ keda:
 ```
 
 This will add `authenticationRef` to each generated `ScaledObject` trigger.
+
+## Production example values
+
+A production-oriented example is provided in `values-prod.yaml` with:
+
+- `keda.authenticationRef.enabled: true`
+- non-default scaling thresholds and replica limits
+- resource requests/limits per agent
+- external secret usage (`secrets.create: false`)
+
+Example install command:
+
+```bash
+helm upgrade --install agentforge ./k8s/charts/agentforge -f ./k8s/charts/agentforge/values-prod.yaml
+```
