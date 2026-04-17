@@ -1,0 +1,23 @@
+{{- if .Values.keda.enabled }}
+{{- range .Values.agents }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "agentforge.fullname" $ }}-{{ .name }}-scaledobject
+  labels:
+    {{- include "agentforge.labels" $ | nindent 4 }}
+    agentforge/role: {{ .name | quote }}
+spec:
+  scaleTargetRef:
+    name: {{ include "agentforge.fullname" $ }}-{{ .name }}
+  minReplicaCount: {{ $.Values.keda.minReplicaCount }}
+  maxReplicaCount: {{ $.Values.keda.maxReplicaCount }}
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: {{ $.Values.keda.queueUrl | quote }}
+        queueLength: {{ $.Values.keda.queueLength | quote }}
+        awsRegion: {{ $.Values.awsRegion | quote }}
+---
+{{- end }}
+{{- end }}

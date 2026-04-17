@@ -1,0 +1,64 @@
+{
+  "name": "AgentForge Retry and Timeout Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agentforge/agent-failure",
+        "responseMode": "onReceived"
+      },
+      "name": "Failure Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 280]
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json.body || $json;\nconst retry = Number(body.retry_count || 0);\nconst max = Number(body.max_retries || 1);\nif (retry < max) {\n  return [{ json: { ...body, retry_count: retry + 1, action: 'retry' } }];\n}\nreturn [{ json: { ...body, status: 'failed', action: 'failed' } }];"
+      },
+      "name": "Decide Retry",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 280]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://dashboard/api/webhooks/n8n",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{$json}}"
+      },
+      "name": "Update Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [700, 280]
+    }
+  ],
+  "connections": {
+    "Failure Webhook": {
+      "main": [
+        [
+          {
+            "node": "Decide Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Retry": {
+      "main": [
+        [
+          {
+            "node": "Update Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}

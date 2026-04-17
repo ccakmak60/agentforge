@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentforge-config
+data:
+  sqs_endpoint_url: http://elasticmq.default.svc.cluster.local:9324
+  task_queue: task-queue
+  agent_chat_queue: agent-chat
+  result_queue: result-queue
+  aws_region: us-east-1
+  llm_provider: stub
+  openai_model: gpt-4o-mini
+  ollama_model: llama3.1
+  ollama_base_url: http://ollama.default.svc.cluster.local:11434

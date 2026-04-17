@@ -1,0 +1,86 @@
+{{- range .Values.agents }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agentforge.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "agentforge.labels" $ | nindent 4 }}
+    agentforge/role: {{ .name | quote }}
+spec:
+  replicas: {{ .replicas | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "agentforge.name" $ }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+      agentforge/role: {{ .name | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "agentforge.name" $ }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
+        agentforge/role: {{ .name | quote }}
+    spec:
+      containers:
+        - name: agent
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+            - name: AGENT_TYPE
+              value: {{ .name | quote }}
+            - name: SQS_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: sqs_endpoint_url
+            - name: TASK_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: task_queue
+            - name: AGENT_CHAT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: agent_chat_queue
+            - name: RESULT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: result_queue
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: aws_region
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: llm_provider
+            - name: OPENAI_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: openai_model
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: ollama_model
+            - name: OLLAMA_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentforge.fullname" $ }}-config
+                  key: ollama_base_url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secrets.name }}
+                  key: OPENAI_API_KEY
+                  optional: true
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+{{- end }}

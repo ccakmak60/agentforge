@@ -1,0 +1,41 @@
+image:
+  repository: agentforge/agents
+  tag: latest
+  pullPolicy: IfNotPresent
+
+sqsEndpointUrl: http://elasticmq.default.svc.cluster.local:9324
+awsRegion: us-east-1
+
+queues:
+  task: task-queue
+  chat: agent-chat
+  result: result-queue
+
+llm:
+  provider: stub
+  openaiModel: gpt-4o-mini
+  ollamaModel: llama3.1
+  ollamaBaseUrl: http://ollama.default.svc.cluster.local:11434
+
+secrets:
+  create: true
+  name: agentforge-secrets
+  openaiApiKey: ""
+
+keda:
+  enabled: true
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  queueLength: "5"
+  queueUrl: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+
+agents:
+  - name: researcher
+    replicas: 1
+    resources: {}
+  - name: summarizer
+    replicas: 1
+    resources: {}
+  - name: reviewer
+    replicas: 1
+    resources: {}

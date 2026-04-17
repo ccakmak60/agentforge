@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agentforge.fullname" . }}-config
+  labels:
+    {{- include "agentforge.labels" . | nindent 4 }}
+data:
+  sqs_endpoint_url: {{ .Values.sqsEndpointUrl | quote }}
+  task_queue: {{ .Values.queues.task | quote }}
+  agent_chat_queue: {{ .Values.queues.chat | quote }}
+  result_queue: {{ .Values.queues.result | quote }}
+  aws_region: {{ .Values.awsRegion | quote }}
+  llm_provider: {{ .Values.llm.provider | quote }}
+  openai_model: {{ .Values.llm.openaiModel | quote }}
+  ollama_model: {{ .Values.llm.ollamaModel | quote }}
+  ollama_base_url: {{ .Values.llm.ollamaBaseUrl | quote }}

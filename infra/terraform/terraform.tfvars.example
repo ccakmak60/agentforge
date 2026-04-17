@@ -1,0 +1,17 @@
+aws_region   = "us-east-1"
+project_name = "agentforge"
+environment  = "dev"
+
+queue_names = {
+  task   = "task-queue"
+  chat   = "agent-chat"
+  result = "result-queue"
+}
+
+# Optional override (leave empty to auto-generate from project/environment)
+artifacts_bucket_name_override = ""
+
+common_tags = {
+  Owner      = "platform-team"
+  CostCenter = "engineering"
+}

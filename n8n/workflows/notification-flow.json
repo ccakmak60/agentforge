@@ -1,0 +1,64 @@
+{
+  "name": "AgentForge Notification Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agentforge/task-complete",
+        "responseMode": "onReceived"
+      },
+      "name": "Task Complete Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json.body || $json;\nconst summary = `Task ${body.task_id} finished with status ${body.status || 'completed'}`;\nreturn [{ json: { ...body, summary } }];"
+      },
+      "name": "Build Notification",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://dashboard/api/webhooks/n8n",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{$json}}"
+      },
+      "name": "Notify Dashboard",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [700, 260]
+    }
+  ],
+  "connections": {
+    "Task Complete Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Notification": {
+      "main": [
+        [
+          {
+            "node": "Notify Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}

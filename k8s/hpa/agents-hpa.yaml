@@ -1,0 +1,56 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-researcher-scaledobject
+  labels:
+    app.kubernetes.io/name: agentforge
+    agentforge/role: researcher
+spec:
+  scaleTargetRef:
+    name: agent-researcher
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+        queueLength: "5"
+        awsRegion: us-east-1
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-summarizer-scaledobject
+  labels:
+    app.kubernetes.io/name: agentforge
+    agentforge/role: summarizer
+spec:
+  scaleTargetRef:
+    name: agent-summarizer
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+        queueLength: "5"
+        awsRegion: us-east-1
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-reviewer-scaledobject
+  labels:
+    app.kubernetes.io/name: agentforge
+    agentforge/role: reviewer
+spec:
+  scaleTargetRef:
+    name: agent-reviewer
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+        queueLength: "5"
+        awsRegion: us-east-1

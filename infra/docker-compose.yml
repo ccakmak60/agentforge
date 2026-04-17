@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  dashboard:
+    build: ../dashboard
+    environment:
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+      STORAGE_BACKEND: dynamodb
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+      AWS_REGION: us-east-1
+    ports:
+      - "8080:80"
+    depends_on:
+      - elasticmq
+      - dynamodb-local
+
+  elasticmq:
+    image: softwaremill/elasticmq-native:1.5.10
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf
+    command: -Dconfig.file=/opt/elasticmq.conf
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniopassword
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    ports:
+      - "8000:8000"
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      N8N_HOST: localhost
+      WEBHOOK_URL: http://localhost:5678/
+    ports:
+      - "5678:5678"
+
+  agent-research:
+    build: ../agents
+    environment:
+      AGENT_TYPE: researcher
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+    depends_on:
+      - elasticmq
+
+  agent-summarizer:
+    build: ../agents
+    environment:
+      AGENT_TYPE: summarizer
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+    depends_on:
+      - elasticmq
+
+  agent-reviewer:
+    build: ../agents
+    environment:
+      AGENT_TYPE: reviewer
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+    depends_on:
+      - elasticmq
+
+  orchestrator:
+    build: ./orchestrator
+    environment:
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+      TEAM_ORDER: researcher,summarizer,reviewer
+    depends_on:
+      - elasticmq

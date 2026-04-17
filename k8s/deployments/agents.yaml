@@ -1,0 +1,218 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-researcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-researcher
+  template:
+    metadata:
+      labels:
+        app: agent-researcher
+    spec:
+      containers:
+        - name: agent
+          image: agentforge/agents:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AGENT_TYPE
+              value: researcher
+            - name: SQS_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: sqs_endpoint_url
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: aws_region
+            - name: TASK_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: task_queue
+            - name: AGENT_CHAT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: agent_chat_queue
+            - name: RESULT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: result_queue
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: llm_provider
+            - name: OPENAI_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: openai_model
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_model
+            - name: OLLAMA_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_base_url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agentforge-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-summarizer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-summarizer
+  template:
+    metadata:
+      labels:
+        app: agent-summarizer
+    spec:
+      containers:
+        - name: agent
+          image: agentforge/agents:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AGENT_TYPE
+              value: summarizer
+            - name: SQS_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: sqs_endpoint_url
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: aws_region
+            - name: TASK_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: task_queue
+            - name: AGENT_CHAT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: agent_chat_queue
+            - name: RESULT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: result_queue
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: llm_provider
+            - name: OPENAI_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: openai_model
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_model
+            - name: OLLAMA_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_base_url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agentforge-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-reviewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-reviewer
+  template:
+    metadata:
+      labels:
+        app: agent-reviewer
+    spec:
+      containers:
+        - name: agent
+          image: agentforge/agents:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AGENT_TYPE
+              value: reviewer
+            - name: SQS_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: sqs_endpoint_url
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: aws_region
+            - name: TASK_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: task_queue
+            - name: AGENT_CHAT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: agent_chat_queue
+            - name: RESULT_QUEUE
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: result_queue
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: llm_provider
+            - name: OPENAI_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: openai_model
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_model
+            - name: OLLAMA_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: agentforge-config
+                  key: ollama_base_url
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agentforge-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
