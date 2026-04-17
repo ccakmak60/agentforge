@@ -24,10 +24,16 @@ secrets:
 
 keda:
   enabled: true
+  pollingInterval: 30
+  cooldownPeriod: 300
   minReplicaCount: 1
   maxReplicaCount: 5
   queueLength: "5"
   queueUrl: https://sqs.us-east-1.amazonaws.com/123456789012/task-queue
+  identityOwner: operator
+  authenticationRef:
+    enabled: false
+    name: ""
 
 agents:
   - name: researcher
