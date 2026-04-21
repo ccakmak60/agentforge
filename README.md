@@ -2,6 +2,23 @@
 
 AgentForge is a multi-agent orchestration project scaffolded from the design document in `docs/superpowers/specs/2026-04-16-agentforge-design.md`.
 
+## Demo video
+
+<video controls width="960" poster="agentforge-promo-poster.jpg">
+  <source src="agentforge-promo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+Fallback link: [Watch `agentforge-promo.mp4`](agentforge-promo.mp4)
+
+GIF preview (fallback for strict markdown renderers):
+
+[![AgentForge demo preview](agentforge-promo-preview.gif)](agentforge-promo.mp4)
+
+- Video file: `agentforge-promo.mp4`
+- Poster frame: `agentforge-promo-poster.jpg`
+- GIF preview: `agentforge-promo-preview.gif`
+
 ## Implemented in this repo
 
 - `agents/` runnable Python agent workers (`researcher`, `summarizer`, `reviewer`)
