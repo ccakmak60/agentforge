@@ -1,9 +1,19 @@
-# Dashboard API (Implementation Scaffold)
+# Dashboard (UI + API Scaffold)
 
-This folder now contains a working PHP API scaffold for the dashboard endpoints from the design document.
+This folder contains a working PHP dashboard and API scaffold for the endpoints from the design document.
+
+## Frontend
+
+- `GET /` serves the AgentForge control room UI.
+- The UI creates agents, creates teams, submits tasks, polls task status, and checks conversations through the API endpoints below.
+- Styling follows the Linear-inspired design tokens in the attached design brief: pale surfaces, crisp borders, mono metadata, and no shadows.
 
 ## Implemented Endpoints
 
+- `GET /api`
+- `GET /api/agents`
+- `GET /api/teams`
+- `GET /api/tasks`
 - `POST /api/agents`
 - `POST /api/teams`
 - `POST /api/tasks`
