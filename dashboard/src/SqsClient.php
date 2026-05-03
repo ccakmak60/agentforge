@@ -37,7 +37,8 @@ final class SqsClient
         ], $queueUrl);
 
         $messages = [];
-        $nodes = $xml->xpath('//Message');
+        $xml->registerXPathNamespace('sqs', 'http://queue.amazonaws.com/doc/2012-11-05/');
+        $nodes = $xml->xpath('//sqs:Message');
         if (!is_array($nodes)) {
             return $messages;
         }
@@ -70,18 +71,7 @@ final class SqsClient
 
     private function queueUrl(string $queueName): string
     {
-        $xml = $this->query([
-            'Action' => 'GetQueueUrl',
-            'Version' => '2012-11-05',
-            'QueueName' => $queueName,
-        ]);
-
-        $nodes = $xml->xpath('//QueueUrl');
-        if (!is_array($nodes) || count($nodes) === 0) {
-            throw new RuntimeException("Queue URL not returned for {$queueName}");
-        }
-
-        return (string)$nodes[0];
+        return $this->endpoint . '/000000000000/' . $queueName;
     }
 
     private function query(array $params, ?string $url = null): SimpleXMLElement
@@ -94,13 +84,12 @@ final class SqsClient
             'Signature' => 'x',
         ]);
 
-        $target = $url ?? $this->endpoint;
+        $target = ($url ?? $this->endpoint) . '?' . $query;
 
         $context = stream_context_create([
             'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-                'content' => $query,
+                'method' => 'GET',
+                'header' => "Accept: text/xml\r\n",
                 'ignore_errors' => true,
                 'timeout' => 5,
             ],

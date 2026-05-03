@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   dashboard:
     build: ../dashboard
@@ -8,6 +6,8 @@ services:
       STORAGE_BACKEND: dynamodb
       DYNAMODB_ENDPOINT: http://dynamodb-local:8000
       AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: AKIDLOCAL
+      AWS_SECRET_ACCESS_KEY: secretlocal
     ports:
       - "8080:80"
     depends_on:
@@ -15,7 +15,7 @@ services:
       - dynamodb-local
 
   elasticmq:
-    image: softwaremill/elasticmq-native:1.5.10
+    image: softwaremill/elasticmq-native:latest
     ports:
       - "9324:9324"
       - "9325:9325"

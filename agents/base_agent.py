@@ -52,6 +52,17 @@ class BaseAgent(ABC):
         payload = json.loads(message["Body"])
         target_role = payload.get("target_role")
         if target_role not in (None, self.role):
+            logger.info(
+                "%s skipped task %s targeted at %s",
+                self.role,
+                payload.get("task_id"),
+                target_role,
+            )
+            self.sqs.change_message_visibility(
+                QueueUrl=self.task_queue_url,
+                ReceiptHandle=message["ReceiptHandle"],
+                VisibilityTimeout=0,
+            )
             return
 
         logger.info("%s processing task %s", self.role, payload.get("task_id"))

@@ -142,14 +142,85 @@ final class DynamoStore
             return is_array($result) ? $result : [];
         }
 
+        $accessKey = (string)(getenv('AWS_ACCESS_KEY_ID') ?: 'AKID');
+        $secretKey = (string)(getenv('AWS_SECRET_ACCESS_KEY') ?: 'secret');
+        $sessionToken = (string)(getenv('AWS_SESSION_TOKEN') ?: '');
+
+        $service = 'dynamodb';
+        $algorithm = 'AWS4-HMAC-SHA256';
+
+        $time = new \DateTime('now', new \DateTimeZone('UTC'));
+        $amzDate = $time->format('Ymd\THis\Z');
+        $dateStamp = $time->format('Ymd');
+
+        $credentialScope = $dateStamp . '/' . $this->region . '/' . $service . '/aws4_request';
+
+        $parsedEndpoint = parse_url($this->endpoint);
+        $host = $parsedEndpoint['host'] ?? 'localhost';
+        $port = isset($parsedEndpoint['port']) ? ':' . $parsedEndpoint['port'] : '';
+        $fullHost = $host . $port;
+
+        $payloadJson = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $payloadHash = hash('sha256', $payloadJson);
+
+        $headersToSign = [
+            'host' => $fullHost,
+            'x-amz-date' => $amzDate,
+            'x-amz-target' => 'DynamoDB_20120810.' . $action,
+        ];
+        if ($sessionToken !== '') {
+            $headersToSign['x-amz-security-token'] = $sessionToken;
+        }
+
+        $canonicalHeaders = '';
+        $signedHeaders = '';
+        foreach ($headersToSign as $key => $value) {
+            $canonicalHeaders .= strtolower($key) . ':' . trim($value) . "\n";
+            $signedHeaders .= strtolower($key) . ';';
+        }
+        $signedHeaders = rtrim($signedHeaders, ';');
+
+        $canonicalRequest = implode("\n", [
+            'POST',
+            '/',
+            '',
+            $canonicalHeaders,
+            $signedHeaders,
+            $payloadHash,
+        ]);
+
+        $stringToSign = implode("\n", [
+            $algorithm,
+            $amzDate,
+            $credentialScope,
+            hash('sha256', $canonicalRequest),
+        ]);
+
+        $kDate = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
+        $kRegion = hash_hmac('sha256', $this->region, $kDate, true);
+        $kService = hash_hmac('sha256', $service, $kRegion, true);
+        $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+        $signature = hash_hmac('sha256', $stringToSign, $kSigning);
+
+        $authHeader = $algorithm . ' Credential=' . $accessKey . '/' . $credentialScope .
+                      ', SignedHeaders=' . $signedHeaders . ', Signature=' . $signature;
+
+        $httpHeaders = [
+            'Content-Type: application/x-amz-json-1.0',
+            'X-Amz-Target: DynamoDB_20120810.' . $action,
+            'Authorization: ' . $authHeader,
+            'X-Amz-Date: ' . $amzDate,
+            'Host: ' . $fullHost,
+        ];
+        if ($sessionToken !== '') {
+            $httpHeaders[] = 'X-Amz-Security-Token: ' . $sessionToken;
+        }
+
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
-                'header' => implode("\r\n", [
-                    'Content-Type: application/x-amz-json-1.0',
-                    'X-Amz-Target: DynamoDB_20120810.' . $action,
-                ]),
-                'content' => json_encode($payload, JSON_UNESCAPED_SLASHES),
+                'header' => implode("\r\n", $httpHeaders),
+                'content' => $payloadJson,
                 'ignore_errors' => true,
                 'timeout' => 5,
             ],

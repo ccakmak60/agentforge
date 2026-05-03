@@ -878,12 +878,17 @@ $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $path = rtrim((string)$uri, '/');
 $path = $path === '' ? '/' : $path;
 
-if ($method === 'GET' && $path === '/') {
+if (($method === 'GET' || $method === 'HEAD') && $path === '/') {
     render_dashboard();
     return;
 }
 
-if ($method === 'GET' && $path === '/api') {
+if (($method === 'GET' || $method === 'HEAD') && $path === '/favicon.ico') {
+    http_response_code(204);
+    return;
+}
+
+if (($method === 'GET' || $method === 'HEAD') && $path === '/api') {
     respond([
         'service' => 'agentforge-dashboard',
         'status' => 'ok',
