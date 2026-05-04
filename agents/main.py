@@ -1,5 +1,6 @@
 import os
 
+from generic_agent import GenericAgent
 from research_agent import ResearchAgent
 from reviewer_agent import ReviewerAgent
 from summarizer_agent import SummarizerAgent
@@ -13,6 +14,8 @@ def build_agent():
         return SummarizerAgent()
     if agent_type == "reviewer":
         return ReviewerAgent()
+    if agent_type == "skill":
+        return GenericAgent()
     raise ValueError(f"Unsupported AGENT_TYPE: {agent_type}")
 
 

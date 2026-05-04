@@ -6,9 +6,7 @@ from typing import Any, Dict
 
 import boto3
 from botocore.exceptions import ClientError
-
 from config import settings
-
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -25,7 +23,8 @@ class BaseAgent(ABC):
             aws_access_key_id="x",
             aws_secret_access_key="x",
         )
-        self.task_queue_url = self._resolve_queue(settings.task_queue)
+        role_task_queue = f"{settings.task_queue}-{self.role}"
+        self.task_queue_url = self._resolve_queue(role_task_queue)
         self.agent_chat_queue_url = self._resolve_queue(settings.agent_chat_queue)
         self.result_queue_url = self._resolve_queue(settings.result_queue)
 
@@ -58,11 +57,9 @@ class BaseAgent(ABC):
                 payload.get("task_id"),
                 target_role,
             )
-            self.sqs.change_message_visibility(
-                QueueUrl=self.task_queue_url,
-                ReceiptHandle=message["ReceiptHandle"],
-                VisibilityTimeout=0,
-            )
+            # Keep the default visibility timeout instead of immediately re-queuing.
+            # Immediate visibility reset causes hot-looping where non-target agents can
+            # continuously reacquire the same message and starve the intended role.
             return
 
         logger.info("%s processing task %s", self.role, payload.get("task_id"))
@@ -80,9 +77,43 @@ class BaseAgent(ABC):
             payload["failed_role"] = self.role
             payload["error"] = str(exc)
 
-        self.sqs.send_message(QueueUrl=self.agent_chat_queue_url, MessageBody=json.dumps(payload))
-        self.sqs.delete_message(QueueUrl=self.task_queue_url, ReceiptHandle=message["ReceiptHandle"])
+        self.sqs.send_message(
+            QueueUrl=self.agent_chat_queue_url, MessageBody=json.dumps(payload)
+        )
+        self.sqs.delete_message(
+            QueueUrl=self.task_queue_url, ReceiptHandle=message["ReceiptHandle"]
+        )
 
     @abstractmethod
     def process(self, payload: Dict[str, Any]) -> str:
         raise NotImplementedError
+
+    def role_config(
+        self, payload: Dict[str, Any], role: str | None = None
+    ) -> Dict[str, Any]:
+        configs = payload.get("role_configs") or {}
+        if not isinstance(configs, dict):
+            return {}
+        role_key = role or self.role
+        config = configs.get(role_key) or {}
+        return config if isinstance(config, dict) else {}
+
+    def get_model(self, payload: Dict[str, Any], role: str | None = None) -> str:
+        config = self.role_config(payload, role)
+        return config.get("llm_model") or payload.get("llm_model") or settings.nim_model
+
+    def get_system_prompt(
+        self, payload: Dict[str, Any], default: str, role: str | None = None
+    ) -> str:
+        config = self.role_config(payload, role)
+        return str(config.get("system_prompt") or default)
+
+    def get_skills_index(
+        self, payload: Dict[str, Any], role: str | None = None
+    ) -> list:
+        index = payload.get("skills_index") or {}
+        if not isinstance(index, dict):
+            return []
+        role_key = role or self.role
+        skills = index.get(role_key) or []
+        return list(skills) if isinstance(skills, list) else []

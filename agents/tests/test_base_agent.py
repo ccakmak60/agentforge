@@ -32,11 +32,7 @@ class BaseAgentMessageHandlingTests(unittest.TestCase):
 
         agent._handle_message(message)
 
-        agent.sqs.change_message_visibility.assert_called_once_with(
-            QueueUrl="task-url",
-            ReceiptHandle="receipt-1",
-            VisibilityTimeout=0,
-        )
+        agent.sqs.change_message_visibility.assert_not_called()
         agent.sqs.send_message.assert_not_called()
         agent.sqs.delete_message.assert_not_called()
 

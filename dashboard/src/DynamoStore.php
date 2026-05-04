@@ -87,6 +87,24 @@ final class DynamoStore
         return null;
     }
 
+    public function deleteWhere(callable $matchFn): ?array
+    {
+        $rows = $this->scanRows();
+        foreach ($rows as $row) {
+            if ($matchFn($row)) {
+                $this->request('DeleteItem', [
+                    'TableName' => $this->tableName,
+                    'Key' => [
+                        'id' => ['S' => (string)($row['id'] ?? '')],
+                    ],
+                ]);
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
     private function ensureTable(): void
     {
         try {

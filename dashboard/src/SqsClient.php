@@ -18,12 +18,22 @@ final class SqsClient
 
     public function sendMessage(string $queueName, string $messageBody): void
     {
+        $this->createQueue($queueName);
         $queueUrl = $this->queueUrl($queueName);
         $this->query([
             'Action' => 'SendMessage',
             'Version' => '2012-11-05',
             'MessageBody' => $messageBody,
         ], $queueUrl);
+    }
+
+    public function createQueue(string $queueName): void
+    {
+        $this->query([
+            'Action' => 'CreateQueue',
+            'Version' => '2012-11-05',
+            'QueueName' => $queueName,
+        ], $this->endpoint);
     }
 
     public function receiveMessages(string $queueName, int $max = 1): array

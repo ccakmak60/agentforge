@@ -12,7 +12,8 @@ def main() -> None:
         aws_access_key_id="x",
         aws_secret_access_key="x",
     )
-    queue = sqs.get_queue_url(QueueName="task-queue")["QueueUrl"]
+    queue_name = "task-queue-researcher"
+    queue = sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
 
     payload = {
         "task_id": str(uuid.uuid4()),

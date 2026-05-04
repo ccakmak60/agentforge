@@ -53,6 +53,11 @@ services:
     environment:
       AGENT_TYPE: researcher
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      LLM_PROVIDER: nim
+      NIM_API_KEY: ${NIM_API_KEY}
+      NIM_MODEL: ${NIM_MODEL:-meta/llama-3.1-8b-instruct}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      DASHBOARD_BASE_URL: http://dashboard
     depends_on:
       - elasticmq
 
@@ -61,6 +66,11 @@ services:
     environment:
       AGENT_TYPE: summarizer
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      LLM_PROVIDER: nim
+      NIM_API_KEY: ${NIM_API_KEY}
+      NIM_MODEL: ${NIM_MODEL:-meta/llama-3.1-8b-instruct}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      DASHBOARD_BASE_URL: http://dashboard
     depends_on:
       - elasticmq
 
@@ -69,8 +79,44 @@ services:
     environment:
       AGENT_TYPE: reviewer
       SQS_ENDPOINT_URL: http://elasticmq:9324
+      LLM_PROVIDER: nim
+      NIM_API_KEY: ${NIM_API_KEY}
+      NIM_MODEL: ${NIM_MODEL:-meta/llama-3.1-8b-instruct}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      DASHBOARD_BASE_URL: http://dashboard
     depends_on:
       - elasticmq
+
+  agent-skill:
+    build: ../agents
+    environment:
+      AGENT_TYPE: skill
+      SQS_ENDPOINT_URL: http://elasticmq:9324
+      LLM_PROVIDER: nim
+      NIM_API_KEY: ${NIM_API_KEY}
+      NIM_MODEL: ${NIM_MODEL:-meta/llama-3.1-8b-instruct}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      DASHBOARD_BASE_URL: http://dashboard
+    depends_on:
+      - elasticmq
+
+  harbor-runner:
+    build:
+      context: ..
+      dockerfile: benchmarks/harbor/runner/Dockerfile
+    environment:
+      AGENTFORGE_DASHBOARD_URL: http://dashboard
+      HARBOR_JOBS_DIR: /workspace/jobs
+      AGENTFORGE_ROOT: /workspace
+    volumes:
+      - ..:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/libexec/docker/cli-plugins/docker-compose:/usr/libexec/docker/cli-plugins/docker-compose:ro
+    ports:
+      - "8090:8090"
+    depends_on:
+      - dashboard
 
   orchestrator:
     build: ./orchestrator

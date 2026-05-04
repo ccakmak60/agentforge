@@ -4,7 +4,6 @@ import time
 
 import boto3
 
-
 SQS_ENDPOINT_URL = os.getenv("SQS_ENDPOINT_URL", "http://elasticmq:9324")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 TEAM_ORDER = os.getenv("TEAM_ORDER", "researcher,summarizer,reviewer").split(",")
@@ -25,6 +24,12 @@ def queue_url(name: str) -> str:
         return sqs.create_queue(QueueName=name)["QueueUrl"]
 
 
+def role_queue_name(role: str) -> str:
+    if role in {"researcher", "summarizer", "reviewer"}:
+        return f"task-queue-{role}"
+    return "task-queue-skill"
+
+
 def compute_routing_decision(payload: dict, default_team_order: list[str]) -> dict:
     if payload.get("failed_role"):
         failed_role = str(payload.get("failed_role"))
@@ -41,11 +46,17 @@ def compute_routing_decision(payload: dict, default_team_order: list[str]) -> di
         return {"action": "fail"}
 
     payload_order = payload.get("agent_order")
-    order = payload_order if isinstance(payload_order, list) and payload_order else default_team_order
+    order = (
+        payload_order
+        if isinstance(payload_order, list) and payload_order
+        else default_team_order
+    )
 
     normalized_order = [str(role) for role in order]
     current_role = str(payload.get("completed_role", ""))
-    idx = normalized_order.index(current_role) if current_role in normalized_order else -1
+    idx = (
+        normalized_order.index(current_role) if current_role in normalized_order else -1
+    )
     next_idx = idx + 1
 
     if 0 <= next_idx < len(normalized_order):
@@ -58,7 +69,6 @@ def compute_routing_decision(payload: dict, default_team_order: list[str]) -> di
 
 
 def main() -> None:
-    task_queue_url = queue_url("task-queue")
     chat_queue_url = queue_url("agent-chat")
     result_queue_url = queue_url("result-queue")
 
@@ -79,19 +89,27 @@ def main() -> None:
                 body["retry_count"] = decision["retry_count"]
                 body.pop("failed_role", None)
                 body.pop("error", None)
-                sqs.send_message(QueueUrl=task_queue_url, MessageBody=json.dumps(body))
+                retry_queue_url = queue_url(role_queue_name(decision["target_role"]))
+                sqs.send_message(QueueUrl=retry_queue_url, MessageBody=json.dumps(body))
             elif decision["action"] == "route":
                 body["target_role"] = decision["target_role"]
                 body.pop("completed_role", None)
-                sqs.send_message(QueueUrl=task_queue_url, MessageBody=json.dumps(body))
+                route_queue_url = queue_url(role_queue_name(decision["target_role"]))
+                sqs.send_message(QueueUrl=route_queue_url, MessageBody=json.dumps(body))
             elif decision["action"] == "fail":
                 body["status"] = "failed"
-                sqs.send_message(QueueUrl=result_queue_url, MessageBody=json.dumps(body))
+                sqs.send_message(
+                    QueueUrl=result_queue_url, MessageBody=json.dumps(body)
+                )
             else:
                 body["status"] = "completed"
-                sqs.send_message(QueueUrl=result_queue_url, MessageBody=json.dumps(body))
+                sqs.send_message(
+                    QueueUrl=result_queue_url, MessageBody=json.dumps(body)
+                )
 
-            sqs.delete_message(QueueUrl=chat_queue_url, ReceiptHandle=m["ReceiptHandle"])
+            sqs.delete_message(
+                QueueUrl=chat_queue_url, ReceiptHandle=m["ReceiptHandle"]
+            )
 
         time.sleep(0.5)
 

@@ -89,4 +89,26 @@ final class JsonStore
 
         return null;
     }
+
+    public function deleteWhere(callable $matchFn): ?array
+    {
+        $rows = $this->all();
+        $deleted = null;
+        $remaining = [];
+
+        foreach ($rows as $row) {
+            if ($deleted === null && $matchFn($row)) {
+                $deleted = $row;
+                continue;
+            }
+
+            $remaining[] = $row;
+        }
+
+        if ($deleted !== null) {
+            $this->writeAll($remaining);
+        }
+
+        return $deleted;
+    }
 }

@@ -15,6 +15,9 @@ class Settings:
     ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.1")
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+    nim_api_key: str = os.getenv("NIM_API_KEY", "")
+    nim_model: str = os.getenv("NIM_MODEL", "meta/llama-3.1-8b-instruct")
+    nim_base_url: str = os.getenv("NIM_BASE_URL", "https://integrate.api.nvidia.com/v1")
 
 
 settings = Settings()
